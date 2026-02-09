@@ -1,5 +1,3 @@
-# RAG/rag_pipeline.py
-
 from vectorstores.retriever import retrieve_chunks
 from rag.prompts import RAG_PROMPT
 from rag.llm_client import call_llm
