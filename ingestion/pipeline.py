@@ -1,90 +1,56 @@
 import json
 import os
+from typing import List, Dict
 
-from loaders.loaders import load_pdf
-from splitters.splitters import token_based_splitter as split_text
-from vectorstores.retriever import add_documents_to_store, close_store
+from ingestion.loaders.loaders import load_pdf
+from ingestion.splitters.splitters import token_based_splitter
+from vectorstores.retriever import add_documents_to_store
 
-RAW_DATA_DIR = "data/raw"
-CHUNKS_DIR = "data/chunks"
 
-def run_ingestion():
+CHUNKS_PATH = os.path.join("data", "chunks", "chunks.json")
+
+
+def run_ingestion(pdf_path: str) -> List[Dict]:
     """
-    Load PDFs, split them into chunks, and store them in Weaviate
-    
-    This is like:
-    1. Reading all your books
-    2. Cutting them into small pieces (chunks)
-    3. Putting each piece in your smart library (Weaviate)
+    Full ingestion pipeline:
+    PDF → text → chunks → store locally → push to Weaviate
     """
-    print("📚 Starting document ingestion pipeline...")
     
-    all_chunks = []
+    # Validate input
+    if not os.path.exists(pdf_path):
+        raise FileNotFoundError(f"PDF file not found: {pdf_path}")
     
-    # Step 1: Load all PDF files
-    print(f"📂 Looking for PDFs in: {RAW_DATA_DIR}")
-    if not os.path.exists(RAW_DATA_DIR):
-        print(f"❌ Directory {RAW_DATA_DIR} not found!")
-        return
+    print(f"[Ingestion] Loading PDF: {pdf_path}")
+    documents = load_pdf(pdf_path)
     
-    pdf_files = [f for f in os.listdir(RAW_DATA_DIR) if f.endswith(".pdf")]
-    print(f"📄 Found {len(pdf_files)} PDF files")
+    if not documents:
+        raise ValueError("No documents loaded from PDF")
     
-    if not pdf_files:
-        print("⚠️  No PDF files found. Add some PDFs to data/raw/ folder")
-        return
+    print(f"[Ingestion] Loaded {len(documents)} pages")
     
-    # Step 2: Process each PDF
-    for file_name in pdf_files:
-        print(f"\n📖 Processing: {file_name}")
-        file_path = os.path.join(RAW_DATA_DIR, file_name)
-        
-        try:
-            # Load the PDF
-            pages = load_pdf(file_path)
-            print(f"  Loaded {len(pages)} pages")
-            
-            # Split each page into chunks
-            file_chunks = []
-            for page in pages:
-                chunks = split_text(
-                    text=page["text"],
-                    metadata=page["metadata"]
-                )
-                file_chunks.extend(chunks)
-            
-            print(f"  Created {len(file_chunks)} chunks")
-            all_chunks.extend(file_chunks)
-            
-        except Exception as e:
-            print(f"  ❌ Error processing {file_name}: {e}")
-            continue
+    print("[Ingestion] Splitting text into chunks...")
+    chunks = token_based_splitter(documents)
     
-    # Step 3: Save chunks to JSON file (backup)
-    print(f"\n💾 Saving {len(all_chunks)} chunks to JSON file...")
-    os.makedirs(CHUNKS_DIR, exist_ok=True)
-    output_path = os.path.join(CHUNKS_DIR, "chunks.json")
+    if not chunks:
+        raise ValueError("No chunks created during ingestion")
     
-    with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(all_chunks, f, indent=2, ensure_ascii=False)
+    print(f"[Ingestion] Created {len(chunks)} chunks")
     
-    print(f"✅ Saved chunks to {output_path}")
+    # Ensure directories exist
+    os.makedirs(os.path.dirname(CHUNKS_PATH), exist_ok=True)
     
-    # Step 4: Add chunks to Weaviate
-    if all_chunks:
-        print(f"\n🚀 Adding {len(all_chunks)} chunks to Weaviate...")
-        success = add_documents_to_store(all_chunks)
-        
-        if success:
-            print("✅ All documents successfully added to Weaviate!")
-        else:
-            print("❌ Failed to add documents to Weaviate")
-    else:
-        print("⚠️  No chunks to add")
+    # Save chunks locally (debug / audit)
+    with open(CHUNKS_PATH, "w", encoding="utf-8") as f:
+        json.dump(chunks, f, indent=2, ensure_ascii=False)
     
-    # Clean up connection
-    close_store()
-    print("\n🎉 Ingestion pipeline completed!")
-
-if __name__ == "__main__":
-    run_ingestion()
+    print(f"[Ingestion] Chunks saved to {CHUNKS_PATH}")
+    
+    print("[Ingestion] Adding chunks to vector store (Weaviate)...")
+    success = add_documents_to_store(chunks)
+    
+    if not success:
+        raise RuntimeError("Failed to add documents to vector store")
+    
+    print("[Ingestion] ✓ Ingestion complete")
+    
+    return chunks
