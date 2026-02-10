@@ -1,10 +1,33 @@
-
-from transformers import AutoTokenizer, AutoModelForCausalLM
-import torch
-
+from ollama import chat
+from ollama import ResponseError
+MODEL_NAME = "gemma3:4b"
+MAX_TOKENS = 300
+TEMPERATURE = 0.0
 def call_llm(prompt: str) -> str:
-    print("\n--- PROMPT SENT TO LLM ---\n")
-    print(prompt)
-    print("\n--- END PROMPT ---\n")
+    """
+    Calls Ollama using Python SDK.
+    Always returns a string.
+    """
 
-    return "Mock answer: RAG pipeline executed successfully."
+    try:
+        response = chat(
+            model=MODEL_NAME,
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            options={
+                "temperature": TEMPERATURE,
+                "num_predict": MAX_TOKENS
+            }
+        )
+
+        return response["message"]["content"].strip()
+
+    except ResponseError as e:
+        return f"LLM error: {e}"
+
+    except Exception as e:
+        return f"LLM error: {str(e)}"
