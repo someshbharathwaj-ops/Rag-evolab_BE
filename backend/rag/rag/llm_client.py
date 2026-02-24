@@ -1,6 +1,6 @@
 from ollama import chat
 from ollama import ResponseError
-MODEL_NAME = "gemma3:4b"
+MODEL_NAME = "phi3:mini"
 MAX_TOKENS = 300
 TEMPERATURE = 0.0
 def call_llm(prompt: str) -> str:
