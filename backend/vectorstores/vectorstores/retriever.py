@@ -1,4 +1,4 @@
-from vectorstores.weaviate_store import WeaviateStore
+from .weaviate_store import WeaviateStore
 
 _store_instance = None
 

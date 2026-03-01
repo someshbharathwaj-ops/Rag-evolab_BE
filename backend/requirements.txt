@@ -7,6 +7,6 @@ ollama==0.3.3
 tiktoken==0.8.0
 pydantic==2.9.2
 python-multipart==0.0.12
-weaviate-cli==0.4.1
-chromadb==0.6.3
-text-generation==0.6.3
+weaviate-client==4.6.5
+
+text-generation==0.7.0
