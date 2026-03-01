@@ -10,9 +10,10 @@
     "export": "next export"
   },
   "dependencies": {
+    "next": "latest",
+    "next-themes": "^0.4.6",
     "react": "^18",
-    "react-dom": "^18",
-    "next": "latest"
+    "react-dom": "^18"
   },
   "devDependencies": {
     "eslint": "^9",
