@@ -6,8 +6,8 @@ import os
 # Add the parent directory to sys.path to import rag modules
 sys.path.append(os.path.join(os.path.dirname(__file__), "."))
 
-from rag.rag.rag_pipeline import run_rag
-from rag.rag.llm_client import call_llm
+from rag.rag_pipeline import run_rag
+from rag.llm_client import call_llm
 
 app = FastAPI(
     title="RAG Application API",

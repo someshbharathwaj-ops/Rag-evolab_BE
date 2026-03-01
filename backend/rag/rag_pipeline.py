@@ -1,6 +1,6 @@
-from vectorstores.vectorstores.retriever import retrieve_chunks
-from .prompts import RAG_PROMPT
-from .llm_client import call_llm
+from vectorstores.retriever import retrieve_chunks
+from rag.prompts import RAG_PROMPT
+from rag.llm_client import call_llm
 
 def run_rag(query: str, top_k: int = 5):
     chunks = retrieve_chunks(query, top_k)
