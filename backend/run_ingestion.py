@@ -3,7 +3,7 @@ Script to run the ingestion pipeline on your PDFs
 """
 import os
 import sys
-from ingestion.ingestion.pipeline import run_ingestion
+from ingestion.pipeline import run_ingestion
 
 def main():
     # Add the current directory to Python path
@@ -11,8 +11,8 @@ def main():
     
     # Path to your PDF files 
     pdf_files = [
-        "data/data/raw/1-s2.0-S1877050924021860-main.pdf",
-        "data/data/raw/2504.07615v2.pdf"
+        "backend/data/raw/6_2024_10_09!10_32_54_AM.pdf" ,
+        "backend/data/raw/3712256.pdf",
     ]
     
     print("Starting document ingestion process...")
