@@ -1,34 +1,30 @@
 # RAG-Evolab
 
-RAG-Evolab is a **Retrieval Augmented Generation (RAG) application** designed to support the Evolab learning ecosystem.
-It enables users to ask questions and receive answers generated from the content of ingested documents.
+RAG-Evolab is a Retrieval Augmented Generation (RAG) application designed to support the Evolab learning ecosystem. It enables users to ask questions and receive answers generated from the content of ingested documents.
 
 The system processes documents, converts them into embeddings stored in a vector database, retrieves relevant context for a query, and generates responses using a language model.
 
 ---
 
-# System Overview
+## System Overview
 
 The application consists of two main components:
 
-**Frontend**
+### Frontend
+- Built with Next.js
+- Provides a user interface for submitting queries
 
-* Built with Next.js
-* Provides a user interface for submitting queries
-
-**Backend**
-
-* Built with FastAPI
-* Handles document ingestion, vector retrieval, and response generation
+### Backend
+- Built with FastAPI
+- Handles document ingestion, vector retrieval, and response generation
 
 The backend interacts with:
-
-* **Weaviate** (vector database)
-* **Ollama** (local language model runtime)
+- **Weaviate** (vector database)
+- **Ollama** (local language model runtime)
 
 ---
 
-# Project Structure
+## Project Structure
 
 ```
 RAG-evolab/
@@ -78,21 +74,21 @@ RAG-evolab/
 
 ---
 
-# Requirements
+## Requirements
 
-Before running the application ensure the following are installed:
+Before running the application, ensure the following are installed:
 
-* Python **3.8 or higher**
-* Node.js **16 or higher**
-* npm
-* Weaviate instance
-* Ollama installed
+- Python **3.8 or higher**
+- Node.js **16 or higher**
+- npm
+- Weaviate instance
+- Ollama installed
 
 ---
 
-# Installation
+## Installation
 
-## Clone the Repository
+### Clone the Repository
 
 ```
 git clone https://github.com/Akhils696/RAG-evolab.git
@@ -101,7 +97,7 @@ cd RAG-evolab
 
 ---
 
-# Backend Setup
+## Backend Setup
 
 Navigate to the backend directory:
 
@@ -117,7 +113,7 @@ pip install -r requirements.txt
 
 ---
 
-# Environment Configuration
+## Environment Configuration
 
 Create a `.env` file in the project root.
 
@@ -132,7 +128,7 @@ MODEL_NAME=phi3:mini
 
 ---
 
-# Frontend Setup
+## Frontend Setup
 
 Navigate to the frontend directory:
 
@@ -148,9 +144,9 @@ npm install
 
 ---
 
-# Running the Application
+## Running the Application
 
-## Start Ollama
+### Start Ollama
 
 ```
 ollama serve
@@ -164,7 +160,7 @@ ollama pull phi3:mini
 
 ---
 
-## Start Backend
+### Start Backend
 
 From the backend directory:
 
@@ -180,7 +176,7 @@ http://localhost:8000
 
 ---
 
-## Start Frontend
+### Start Frontend
 
 From the frontend directory:
 
@@ -196,7 +192,7 @@ http://localhost:3000
 
 ---
 
-# Using the System
+## Using the System
 
 1. Add documents to:
 
@@ -216,7 +212,7 @@ backend/data/raw/
 
 ---
 
-# API Endpoints
+## API Endpoints
 
 | Endpoint  | Method | Description          |
 | --------- | ------ | -------------------- |
@@ -226,7 +222,7 @@ backend/data/raw/
 
 ---
 
-# Troubleshooting
+## Troubleshooting
 
 ### Backend not responding
 
@@ -292,19 +288,19 @@ ollama pull phi3:mini
 
 Check that:
 
-* The document format is supported
-* Files are located inside `backend/data/raw`
-* The vector database connection is available
+- The document format is supported
+- Files are located inside `backend/data/raw`
+- The vector database connection is available
 
 ---
 
-# Notes
+## Notes
 
-* Large datasets and processed files should not be committed to Git.
-* Ensure required services (Weaviate and Ollama) are running before starting the backend.
+- Large datasets and processed files should not be committed to Git.
+- Ensure required services (Weaviate and Ollama) are running before starting the backend.
 
 ---
 
-# License
+## License
 
 This project is licensed under the terms defined in the LICENSE file.
