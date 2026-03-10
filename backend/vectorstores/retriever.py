@@ -1,4 +1,5 @@
 from .weaviate_store import WeaviateStore
+import os
 
 _store_instance = None
 
@@ -15,6 +16,19 @@ def retrieve_chunks(query: str, top_k: int = 5):
     Retrieve relevant chunks from Weaviate.
     Falls back to mock data if store is unavailable.
     """
+    use_weaviate = os.getenv("USE_WEAVIATE", "false").strip().lower() == "true"
+    if not use_weaviate:
+        return [
+            {
+                "text": "The paper proposes a new method for efficient information retrieval.",
+                "metadata": {"source": "paper1.pdf"}
+            },
+            {
+                "text": "Experimental results demonstrate improved performance over baseline methods.",
+                "metadata": {"source": "paper1.pdf"}
+            }
+        ]
+
     try:
         store = get_store()
         results = store.search(query, limit=top_k)
