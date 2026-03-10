@@ -1,6 +1,7 @@
 import os
 from ollama import chat
 from ollama import ResponseError
+from ollama import Client
 import requests
 
 # Configuration
@@ -105,7 +106,8 @@ def _call_openrouter(prompt: str) -> str:
 def _call_ollama(prompt: str) -> str:
     """Call LLM using Ollama (local or remote)"""
     try:
-        response = chat(
+        client = Client(host=OLLAMA_HOST)
+        response = client.chat(
             model=MODEL_NAME,
             messages=[
                 {
@@ -116,8 +118,7 @@ def _call_ollama(prompt: str) -> str:
             options={
                 "temperature": TEMPERATURE,
                 "num_predict": MAX_TOKENS
-            },
-            host=OLLAMA_HOST
+            }
         )
 
         return response["message"]["content"].strip()
