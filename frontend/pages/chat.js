@@ -159,7 +159,10 @@ export default function Home() {
         body: JSON.stringify({ query: question }),
       });
 
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data?.message || data?.error || `Request failed with status ${res.status}`);
+      }
       const botResponse = data.response || 'No response received';
 
       const assistantMessageId = `${Date.now().toString()}-assistant`;
@@ -178,7 +181,7 @@ export default function Home() {
       await streamAssistantMessage(chatId, assistantMessageId, botResponse);
     } catch (error) {
       console.error('Error:', error);
-      const errorResponse = 'Error occurred while processing your query.';
+      const errorResponse = error?.message || 'Error occurred while processing your query.';
       const errorMessageId = `${Date.now().toString()}-error`;
       const errorBotMessage = {
         id: errorMessageId,
