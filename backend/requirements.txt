@@ -8,5 +8,5 @@ tiktoken==0.8.0
 pydantic==2.9.2
 python-multipart==0.0.12
 weaviate-client==4.6.5
-
+requests==2.32.3
 text-generation==0.7.0
