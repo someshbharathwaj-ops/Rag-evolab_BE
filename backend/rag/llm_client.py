@@ -31,43 +31,42 @@ def call_llm(prompt: str) -> str:
         return _call_ollama(prompt)
 
 def _call_huggingface(prompt: str) -> str:
-   """Call LLM using Hugging Face Inference API (FREE)"""
-   try:
-       model = os.getenv('MODEL_NAME', 'google/flan-t5-base')
-       api_url = f"https://api-inference.huggingface.co/models/{model}"
-       
-     headers = {
-           "Authorization": f"Bearer {HUGGING_FACE_TOKEN}",
-           "Content-Type": "application/json"
-       }
-       
-       payload = {
-           "inputs": prompt,
-           "parameters": {
-               "max_new_tokens": MAX_TOKENS,
-               "temperature": TEMPERATURE
-           }
-       }
-       
-       response = requests.post(api_url, headers=headers, json=payload, timeout=30)
-       
-       if response.status_code != 200:
-           return f"Hugging Face error ({response.status_code}): {response.text[:200]}"
-       
-       result = response.json()
-       
-       # Extract generated text based on response format
-       if isinstance(result, list) and len(result) > 0:
-           return result[0].get('generated_text', '').strip()
-       elif isinstance(result, dict):
-           return result.get('generated_text', '').strip()
-       else:
-           return str(result).strip()[:1000]
-   
-   except requests.exceptions.RequestException as e:
-       return f"Hugging Face request failed: {str(e)}"
-   except Exception as e:
-       return f"LLM error: {str(e)}"
+    """Call LLM using Hugging Face Inference API (FREE)."""
+    try:
+        model = os.getenv('MODEL_NAME', 'google/flan-t5-base')
+        api_url = f"https://api-inference.huggingface.co/models/{model}"
+
+        headers = {
+            "Authorization": f"Bearer {HUGGING_FACE_TOKEN}",
+            "Content-Type": "application/json"
+        }
+
+        payload = {
+            "inputs": prompt,
+            "parameters": {
+                "max_new_tokens": MAX_TOKENS,
+                "temperature": TEMPERATURE
+            }
+        }
+
+        response = requests.post(api_url, headers=headers, json=payload, timeout=30)
+
+        if response.status_code != 200:
+            return f"Hugging Face error ({response.status_code}): {response.text[:200]}"
+
+        result = response.json()
+
+        # Extract generated text based on response format.
+        if isinstance(result, list) and len(result) > 0:
+            return result[0].get('generated_text', '').strip()
+        if isinstance(result, dict):
+            return result.get('generated_text', '').strip()
+        return str(result).strip()[:1000]
+
+    except requests.exceptions.RequestException as e:
+        return f"Hugging Face request failed: {str(e)}"
+    except Exception as e:
+        return f"LLM error: {str(e)}"
 
 def _call_openrouter(prompt: str) -> str:
     """Call LLM using OpenRouter API"""
