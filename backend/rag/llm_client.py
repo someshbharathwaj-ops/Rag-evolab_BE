@@ -1,7 +1,4 @@
 import os
-from ollama import chat
-from ollama import ResponseError
-from ollama import Client
 import requests
 
 # Configuration
@@ -11,6 +8,7 @@ TEMPERATURE = 0.1
 OLLAMA_HOST = os.getenv('OLLAMA_HOST', 'http://localhost:11434')
 OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY')
 HUGGING_FACE_TOKEN = os.getenv('HUGGING_FACE_TOKEN')
+OLLAMA_TIMEOUT_SECONDS = int(os.getenv("OLLAMA_TIMEOUT_SECONDS", "30"))
 
 def call_llm(prompt: str) -> str:
     """
@@ -106,25 +104,27 @@ def _call_openrouter(prompt: str) -> str:
 def _call_ollama(prompt: str) -> str:
     """Call LLM using Ollama (local or remote)"""
     try:
-        client = Client(host=OLLAMA_HOST)
-        response = client.chat(
-            model=MODEL_NAME,
-            messages=[
-                {
-                    "role": "user",
-                    "content": prompt
+        response = requests.post(
+            f"{OLLAMA_HOST.rstrip('/')}/api/chat",
+            json={
+                "model": MODEL_NAME,
+                "messages": [{"role": "user", "content": prompt}],
+                "stream": False,
+                "options": {
+                    "temperature": TEMPERATURE,
+                    "num_predict": MAX_TOKENS
                 }
-            ],
-            options={
-                "temperature": TEMPERATURE,
-                "num_predict": MAX_TOKENS
-            }
+            },
+            timeout=OLLAMA_TIMEOUT_SECONDS
         )
+        response.raise_for_status()
+        payload = response.json()
+        return payload.get("message", {}).get("content", "").strip()
 
-        return response["message"]["content"].strip()
-
-    except ResponseError as e:
-        return f"Ollama error: {e}"
+    except requests.exceptions.Timeout:
+        return f"Ollama error: request timed out after {OLLAMA_TIMEOUT_SECONDS}s"
+    except requests.exceptions.RequestException as e:
+        return f"Ollama error: {str(e)}"
 
     except Exception as e:
         return f"Ollama error: {str(e)}"

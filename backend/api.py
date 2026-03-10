@@ -2,6 +2,8 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import sys
 import os
+import asyncio
+from starlette.concurrency import run_in_threadpool
 
 # Add the parent directory to sys.path to import rag modules
 sys.path.append(os.path.join(os.path.dirname(__file__), "."))
@@ -18,6 +20,8 @@ app = FastAPI(
 class QueryRequest(BaseModel):
     query: str
 
+QUERY_TIMEOUT_SECONDS = float(os.getenv("QUERY_TIMEOUT_SECONDS", "45"))
+
 # The run_rag function is used directly
 
 @app.get("/")
@@ -33,10 +37,18 @@ async def query_endpoint(request: QueryRequest):
         if not request.query.strip():
             raise HTTPException(status_code=400, detail="Query cannot be empty")
         
-        # Process the query using the RAG pipeline
-        response = run_rag(request.query)
+        # Process the query using the RAG pipeline with a hard timeout to avoid hanging requests.
+        response = await asyncio.wait_for(
+            run_in_threadpool(run_rag, request.query),
+            timeout=QUERY_TIMEOUT_SECONDS
+        )
         
         return {"response": response}
+    except asyncio.TimeoutError:
+        raise HTTPException(
+            status_code=504,
+            detail=f"Query timed out after {QUERY_TIMEOUT_SECONDS:.0f}s. Check LLM/Weaviate connectivity."
+        )
     except Exception as e:
         print(f"Error processing query: {e}")
         raise HTTPException(status_code=500, detail=f"Error processing query: {str(e)}")

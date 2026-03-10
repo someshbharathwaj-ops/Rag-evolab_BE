@@ -18,7 +18,7 @@ class WeaviateStore:
             cluster_url=self.url,
             auth_credentials=weaviate.auth.AuthApiKey(self.api_key),
             headers={
-                "X-HuggingFace-Api-Key": os.getenv("HUGGINGFACE_API_KEY", "")
+                "X-HuggingFace-Api-Key": os.getenv("HUGGINGFACE_API_KEY", os.getenv("HUGGING_FACE_TOKEN", ""))
             }
         )
         print(f"Weaviate Cloud connected: {self.url}")
