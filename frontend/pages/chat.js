@@ -159,11 +159,20 @@ export default function Home() {
         body: JSON.stringify({ query: question }),
       });
 
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(data?.message || data?.error || `Request failed with status ${res.status}`);
+      const responseText = await res.text();
+      let data = {};
+      try {
+        data = responseText ? JSON.parse(responseText) : {};
+      } catch (_) {
+        data = { message: responseText };
       }
-      const botResponse = data.response || 'No response received';
+
+      if (!res.ok) {
+        throw new Error(
+          data?.message || data?.error || responseText || `Request failed with status ${res.status}`
+        );
+      }
+      const botResponse = data.response || data.message || 'No response received';
 
       const assistantMessageId = `${Date.now().toString()}-assistant`;
       const newBotMessage = {

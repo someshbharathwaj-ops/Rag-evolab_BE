@@ -33,20 +33,29 @@ export default async function handler(req, res) {
       clearTimeout(timeoutId);
     }
 
+    const responseText = await backendRes.text();
+    let parsed = {};
+    try {
+      parsed = responseText ? JSON.parse(responseText) : {};
+    } catch (_) {
+      parsed = {};
+    }
+
     if (!backendRes.ok) {
-      let backendError = `Backend responded with status ${backendRes.status}`;
-      try {
-        const errJson = await backendRes.json();
-        backendError = errJson?.detail || errJson?.message || backendError;
-      } catch (_) {
-        // Ignore parse errors and keep the status-based fallback error.
-      }
+      const backendError =
+        parsed?.detail ||
+        parsed?.message ||
+        responseText ||
+        `Backend responded with status ${backendRes.status}`;
       return res.status(backendRes.status).json({ message: backendError });
     }
 
-    const data = await backendRes.json();
-    
-    res.status(200).json({ response: data.response });
+    const response =
+      typeof parsed?.response === 'string' && parsed.response.trim()
+        ? parsed.response
+        : responseText || 'No response received';
+
+    return res.status(200).json({ response });
   } catch (error) {
     if (error?.name === 'AbortError') {
       return res.status(504).json({
