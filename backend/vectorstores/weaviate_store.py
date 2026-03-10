@@ -1,7 +1,7 @@
 import weaviate
 from weaviate.classes.config import Configure
-from sentence_transformers import SentenceTransformer
 import os
+import hashlib
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -22,8 +22,8 @@ class WeaviateStore:
             }
         )
         print(f"Weaviate Cloud connected: {self.url}")
-        
-        self.embedder = SentenceTransformer('all-MiniLM-L6-v2')
+        self.embedding_backend = os.getenv("EMBEDDING_BACKEND", "hash").strip().lower()
+        self.embedder = None
         self.collection_name = "DocumentChunks"
         self._setup_collection()
     
@@ -53,8 +53,35 @@ class WeaviateStore:
         
         self.collection = self.client.collections.get(self.collection_name)
     
+    def _hash_embed(self, text, dim=384):
+        """
+        Lightweight deterministic embedding to keep deployment memory/CPU stable.
+        This is the default for cloud deployment.
+        """
+        values = [0.0] * dim
+        for token in text.lower().split():
+            digest = hashlib.sha256(token.encode("utf-8")).digest()
+            idx = int.from_bytes(digest[:4], "big") % dim
+            sign = 1.0 if digest[4] % 2 == 0 else -1.0
+            values[idx] += sign
+        return values
+
+    def _load_sentence_transformer(self):
+        if self.embedder is not None:
+            return self.embedder
+        from sentence_transformers import SentenceTransformer
+        self.embedder = SentenceTransformer('all-MiniLM-L6-v2')
+        return self.embedder
+
     def embed_text(self, text):
-        return self.embedder.encode(text).tolist()
+        if self.embedding_backend == "sentence-transformer":
+            try:
+                model = self._load_sentence_transformer()
+                return model.encode(text).tolist()
+            except Exception:
+                # Fallback to lightweight embedding if model load fails.
+                return self._hash_embed(text)
+        return self._hash_embed(text)
     
     def add_documents(self, chunks):
         with self.collection.batch.dynamic() as batch:

@@ -12,3 +12,5 @@ services:
         value: 45
       - key: OLLAMA_TIMEOUT_SECONDS
         value: 30
+      - key: EMBEDDING_BACKEND
+        value: hash
