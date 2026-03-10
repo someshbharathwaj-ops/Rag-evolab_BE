@@ -11,7 +11,10 @@ export default async function handler(req, res) {
 
   try {
     // Forward the query to the FastAPI backend
-    const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8000';
+    const BACKEND_URL =
+      process.env.NEXT_PUBLIC_BACKEND_URL ||
+      process.env.BACKEND_URL ||
+      'https://rag-evolab-be.onrender.com';
     const backendRes = await fetch(`${BACKEND_URL}/query`, {
       method: 'POST',
       headers: {
